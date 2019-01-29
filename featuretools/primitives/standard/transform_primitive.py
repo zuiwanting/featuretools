@@ -320,7 +320,7 @@ class Latitude(TransformPrimitive):
     return_type = Numeric
 
     def get_function(self):
-        return lambda array: pd.Series([x[0] for x in array])
+        return lambda latlongarray: latlongarray.latitude.values
 
 
 class Longitude(TransformPrimitive):
@@ -332,7 +332,7 @@ class Longitude(TransformPrimitive):
     return_type = Numeric
 
     def get_function(self):
-        return lambda array: pd.Series([x[1] for x in array])
+        return lambda latlongarray: latlongarray.longitude.values
 
 
 class Haversine(TransformPrimitive):
@@ -345,10 +345,10 @@ class Haversine(TransformPrimitive):
 
     def get_function(self):
         def haversine(latlong1, latlong2):
-            lat_1s = np.array([x[0] for x in latlong1])
-            lon_1s = np.array([x[1] for x in latlong1])
-            lat_2s = np.array([x[0] for x in latlong2])
-            lon_2s = np.array([x[1] for x in latlong2])
+            lat_1s = latlong1.latitude.values
+            lon_1s = latlong1.longitude.values
+            lat_2s = latlong2.latitude.values
+            lon_2s = latlong2.longitude.values
             lon1, lat1, lon2, lat2 = map(
                 np.radians, [lon_1s, lat_1s, lon_2s, lat_2s])
             dlon = lon2 - lon1
