@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 
 from featuretools import variable_types
+from featuretools.computational_backends import LatLongArray
 from featuretools.entityset import EntitySet, Relationship
 from featuretools.tests import integration_data
 
@@ -292,9 +293,13 @@ def make_time_indexes(with_integer_time_index=False):
 
 
 def latlong_unstringify(latlong):
-    lat = float(latlong.split(", ")[0].replace("(", ""))
-    lon = float(latlong.split(", ")[1].replace(")", ""))
-    return (lat, lon)
+    seq = []
+    for stringed in latlong:
+        _lat, _long = stringed.split(", ")
+        _lat = float(_lat.replace("(", ""))
+        _long = float(_long.replace(")", ""))
+        seq.append((_lat, _long))
+    return LatLongArray._from_sequence(seq)
 
 
 def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save_files=True, file_location='local',
@@ -337,8 +342,8 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
             # This should be changed back when converted to an EntitySet
             df['customer_id'] = pd.Categorical(df['customer_id'])
         if entity is 'log':
-            df['latlong'] = df['latlong'].apply(latlong_unstringify)
-            df['latlong2'] = df['latlong2'].apply(latlong_unstringify)
+            df['latlong'] = latlong_unstringify(df['latlong'])
+            df['latlong2'] = latlong_unstringify(df['latlong2'])
 
         es.entity_from_dataframe(entity,
                                  df,
