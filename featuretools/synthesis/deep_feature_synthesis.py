@@ -264,8 +264,6 @@ class DeepFeatureSynthesis(object):
                 features for target entity, sorted by feature depth
                 (shallow first).
         """
-        all_features = {}
-
         self.where_clauses = defaultdict(set)
 
         if return_variable_types is None:
@@ -276,11 +274,6 @@ class DeepFeatureSynthesis(object):
             msg = "return_variable_types must be a list, or 'all'"
             assert isinstance(return_variable_types, list), msg
 
-        self._run_dfs(self.es[self.target_entity_id], RelationshipPath([]),
-                      all_features, max_depth=self.max_depth)
-
-        new_features = list(all_features[self.target_entity_id].values())
-
         def filt(f):
             # remove identity features of the ID field of the target entity
             if (isinstance(f, IdentityFeature) and
@@ -289,6 +282,11 @@ class DeepFeatureSynthesis(object):
                 return False
 
             return True
+
+        features_fwd = self._get_features()
+        features_bwd = self._get_features(is_backwards=True)
+
+        new_features = list(features_fwd.union(features_bwd))
 
         # filter out features with undesired return types
         if return_variable_types != 'all':
@@ -310,6 +308,17 @@ class DeepFeatureSynthesis(object):
             print("Built {} features".format(len(new_features)))
             verbose = None
         return new_features
+
+    def _get_features(self, is_backwards=False):
+        all_features = {}
+
+        if is_backwards:
+            self.trans_primitives.reverse()
+
+        self._run_dfs(self.es[self.target_entity_id], RelationshipPath([]),
+                      all_features, max_depth=self.max_depth)
+
+        return set(all_features[self.target_entity_id].values())
 
     def _filter_features(self, features):
         assert isinstance(self.drop_exact, list), "drop_exact must be a list"
