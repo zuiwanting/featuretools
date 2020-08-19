@@ -550,7 +550,11 @@ class DeepFeatureSynthesis(object):
         if max_depth is not None:
             new_max_depth = max_depth - 1
 
-        for _ in range(max_depth):
+        max_transform_depth = max_depth
+        if max_transform_depth is None or max_transform_depth < 0:
+            max_transform_depth = 2  # Probably want this as an input in the long run
+
+        for _ in range(max_transform_depth):
             features_to_add = []
             for trans_prim in self.trans_primitives:
                 current_options = self.primitive_options.get(
