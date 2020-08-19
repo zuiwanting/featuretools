@@ -576,7 +576,7 @@ class DeepFeatureSynthesis(object):
                                                             require_direct_input=require_direct_input)
 
                 for matching_input in matching_inputs:
-                    if all(bf.number_output_features == 1 for bf in matching_input):
+                    if all(bf.number_output_features == 1 for bf in matching_input) and check_transform_stacking(trans_prim, matching_input):
                         new_f = TransformFeature(matching_input,
                                                  primitive=trans_prim)
                         features_to_add.append(new_f)
@@ -804,6 +804,13 @@ class DeepFeatureSynthesis(object):
                                                     primitive_options,
                                                     commutative=primitive.commutative)
         return matching_inputs
+
+
+def check_transform_stacking(primitive, inputs):
+    for f in inputs:
+        if isinstance(f.primitive, primitive.__class__):
+            return False
+    return True
 
 
 def check_stacking(primitive, inputs):
